@@ -1,0 +1,156 @@
+﻿@{
+    ViewBag.Title = "Home Page";
+}
+
+<div class="jumbotron">
+    <h1>Mortgage Calculator</h1>
+    <p class="lead">
+        The Mortgage Calculator helps you:
+        <ul>
+            <li>Choose the right loan for you</li>
+            <li>The Interests and Repayment on your loan</li>
+        </ul>
+    </p>
+</div>
+
+
+<div class="row">
+    <div class="col-md-12">
+        <form class="form-horizontal">
+            <fieldset>
+
+                <!-- Form Name -->
+                <legend>Calculator</legend>
+                <div class="panel-body">
+                    <table class="table table-bordered" id="tblMortagagedatas">
+                        <tr>
+                            <th>Name</th>
+                            <th>Mortgage Type</th>
+                            <th>Interest Repayment</th>
+                            <th>Effective StartDate</th>
+                            <th>Effective EndDate</th>
+                            <th>Terms In Months</th>
+                            <th>Cancellation Fee</th>
+                            <th>Establishment Fee</th>
+                            <th>Interest Rate</th>
+                        </tr>
+                    </table>
+                </div>
+                <div>
+
+                    <div class="form-group">
+                        <label for="mortype">Mortgage Type:</label>
+                        <select id="mortype">
+                            <option value="-1">Select</option>
+                            <option value="0">Variable</option>
+                            <option value="1">Fixed</option>
+                        </select>                       
+                    </div>
+
+
+                    <div class="form-group">
+                        <label for="loanamount">Loan Amount:</label>
+                        <input id="loanamount" name="textinput" type="number" placeholder="0.00" class="form-control input-md" required="required">
+                        <span class="help-block">Enter the amount</span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="loanyears">Loan Years:</label>
+                        <input id="loanyears" name="textinput" type="number" placeholder="0.00" class="form-control input-md" required="required">
+                        <span class="help-block">Enter the No of years</span>
+                    </div>
+                    <div class="form-group">
+                        <label for="loanamount">Interest Rate:</label>
+                        <input id="interestrt" name="textinput" type="number" placeholder="0.00" class="form-control input-md" required="required">
+                        <span class="help-block">Enter the Interest Rate</span>
+                    </div>
+                    <div>
+                        <input type="button" class="btn btn-default" value="Submit" onclick=DoMortgageCalc() />
+                        
+                    </div>
+                    <div>
+                        <br/>
+                    </div>
+                    <div class="form-group">
+                        <label class="alert alert-success" style="display: none" id='TRsuccessMsg'><i className="fa fa-check" aria-hidden="true"></i></label>
+                        <label class="alert alert-success" style="display: none" id='IsuccessMsg'><i className="fa fa-check" aria-hidden="true"></i></label>
+                    </div>
+                </div>
+
+                <!-- Text input-->
+                @*<div class="form-group">
+                    <label class="col-md-4 control-label" for="textinput">Borrowed Amount</label>
+                    <div class="col-md-4">
+                        <input id="textinput" name="textinput" type="text" placeholder="0.00" class="form-control input-md" required="">
+                        <span class="help-block">Enter the amount to borrow</span>
+                    </div>
+                </div>*@
+
+            </fieldset>
+        </form>
+    </div>
+</div>
+<script src="~/Scripts/jquery-1.10.2.min.js"></script>
+
+<script type="text/javascript">    
+
+    $(document).ready(function () {
+        $.ajax({
+            type: "GET",
+            url: "http://localhost:49608/api/mortgage",
+            dataType: "json",
+            success: function (data) {
+
+                $.each(data, function (i, item) {
+                    var rows = "<tr>" +
+                        "<td>" + item.Name + "</td>" +
+                        "<td>" + item.MortgageTypeName + "</td>" +
+                        "<td>" + item.InterestTypeName + "</td>" +
+                        "<td>" + Date(item.EffectiveStartDate,
+                            "dd-MM-yyyy") + "</td>" +
+                        "<td>" + Date(item.EffectiveEndDate,
+                            "dd-MM-yyyy") + "</td>" +
+                        "<td>" + item.TermsInMonths + "</td>" +
+                        "<td>" + item.CancellationFee + "</td>" +
+                        "<td>" + item.EstablishmentFee + "</td>" +
+                        "<td>" + item.InterestRate + "</td>" +
+                        "</tr>";
+                    $('#tblMortagagedatas').append(rows);
+                }); //End of foreach Loop
+                //console.log(data);
+            }, //End of AJAX Success function
+
+            failure: function (data) {
+                alert(data.responseText);
+            }, //End of AJAX failure function
+            error: function (data) {
+                alert(data.responseText);
+            } //End of AJAX error function
+
+        });
+    });
+
+
+    function DoMortgageCalc() {
+        var years = $('#loanyears').val();
+        var amount = $('#loanamount').val();
+        var rate = $('#interestrt').val();
+        if (years != '' && amount != '' && rate != '') {
+            var interest = (parseFloat(amount) * parseFloat(rate) * parseInt(years)) / 100;
+            var totalrepayment = parseFloat(interest) + parseFloat(amount);
+            $('#TRsuccessMsg').text("Total repayment over the lifetime of the loan " + totalrepayment);
+            $('#IsuccessMsg').text("Amount paid in interest over the life of the loan " + interest);
+            $('#TRsuccessMsg').attr('style', 'display:block');
+            $('#IsuccessMsg').attr('style', 'display:block');
+            console.log(interest);
+            console.log(totalrepayment);
+        }
+        else {
+            $('#TRsuccessMsg').text("");
+            $('#IsuccessMsg').text("");
+            $('#TRsuccessMsg').attr('style', 'display:none');
+            $('#IsuccessMsg').attr('style', 'display:none');
+        }
+
+    }
+</script>  
